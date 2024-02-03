@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       birth_date: DataTypes.DATEONLY,
       location: DataTypes.STRING,
       status_message: DataTypes.STRING,
+      sent_time: DataTypes.DATE,
     },
     {
       sequelize,
