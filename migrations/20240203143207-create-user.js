@@ -34,7 +34,6 @@ module.exports = {
         type: Sequelize.STRING(20),
       },
       sent_time: {
-        allowNull: false,
         type: Sequelize.STRING(20),
       },
       created_at: {

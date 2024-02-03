@@ -21,6 +21,7 @@ module.exports = {
         birth_date: "1997-09-12",
         location: "Asia/Jakarta",
         status_message: "UNSEND",
+        sent_time: null,
       },
     ]);
   },
