@@ -18,10 +18,10 @@ module.exports = {
         first_name: "Rakasiwi",
         last_name: "Surya",
         email: "rakasiwi.surya@gmail.com",
-        birth_date: "1997-09-12",
+        birth_date: "1997-02-05",
         location: "Asia/Jakarta",
-        status_message: "UNSEND",
-        sent_time: null,
+        created_at: new Date(),
+        updated_at: new Date(),
       },
     ]);
   },

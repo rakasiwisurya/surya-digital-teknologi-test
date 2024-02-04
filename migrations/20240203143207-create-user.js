@@ -29,12 +29,18 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING(50),
       },
+      message: {
+        allowNull: false,
+        type: Sequelize.TEXT,
+        defaultValue: "it’s your birthday",
+      },
       status_message: {
         allowNull: false,
         type: Sequelize.STRING(20),
+        defaultValue: "UNSENT",
       },
       sent_time: {
-        type: Sequelize.STRING(20),
+        type: Sequelize.DATE,
       },
       created_at: {
         allowNull: false,

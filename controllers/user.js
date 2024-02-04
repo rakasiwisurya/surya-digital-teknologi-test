@@ -1,16 +1,20 @@
 const Joi = require("joi");
-const { User } = require("../models");
+const moment = require("moment-timezone");
 const { Op } = require("sequelize");
+const { User, sequelize } = require("../models");
 
 exports.addUser = async (req, res) => {
-  const { email } = req.body;
+  const { email, first_name, last_name } = req.body;
 
   const schema = Joi.object({
     first_name: Joi.string().max(50).required(),
     last_name: Joi.string().max(50).required(),
     email: Joi.string().email().required(),
     birth_date: Joi.date().required(),
-    location: Joi.string().required(),
+    location: Joi.string()
+      .valid(...moment.tz.names())
+      .optional(),
+    message: Joi.string().optional(),
   });
 
   const { error } = schema.validate(req.body);
@@ -22,21 +26,46 @@ exports.addUser = async (req, res) => {
     });
   }
 
+  const t = await sequelize.transaction();
+
   try {
     const isUserExist = await User.findOne({
       where: {
-        [Op.and]: { email },
+        [Op.or]: {
+          email,
+          [Op.and]: { first_name, last_name },
+        },
       },
+      transaction: t,
     });
 
     if (isUserExist) {
       return res.status(400).send({
         status: "Failed",
-        message: "User already exist",
+        message: "Email or first name and last name already exist",
       });
     }
 
-    await User.create({ ...req.body, status_message: "UNSEND" });
+    await User.create(
+      {
+        ...req.body,
+        location: req.body.location ? req.body.location : moment.tz.guess(),
+      },
+      { transaction: t }
+    );
+
+    // code for bulk insert dummy data
+    // const arrays = Array.from(Array(100));
+    // const bulkData = arrays.map((_, index) => ({
+    //   ...req.body,
+    //   first_name: `${index}${req.body.first_name}`,
+    //   last_name: `${index}${req.body.last_name}`,
+    //   email: `${index}${req.body.email}`,
+    //   location: req.body.location ? req.body.location : moment.tz.guess(),
+    // }));
+    // await User.bulkCreate(bulkData);
+
+    await t.commit();
 
     res.send({
       status: "Success",
@@ -44,6 +73,7 @@ exports.addUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    await t.rollback();
     res.status(500).send({
       status: "Failed",
       message: error.message,
@@ -53,7 +83,7 @@ exports.addUser = async (req, res) => {
 
 exports.getUsers = async (req, res) => {
   try {
-    const data = User.findAll();
+    const data = await User.findAll();
     res.send({
       status: "Success",
       message: "Success get all user",
@@ -76,7 +106,10 @@ exports.updateUser = async (req, res) => {
     last_name: Joi.string().max(50).optional(),
     email: Joi.string().email().optional(),
     birth_date: Joi.date().optional(),
-    location: Joi.string().optional(),
+    location: Joi.string()
+      .valid(...moment.tz.names())
+      .optional(),
+    message: Joi.string().optional(),
   });
 
   const { error } = schema.validate(req.body);
@@ -88,9 +121,12 @@ exports.updateUser = async (req, res) => {
     });
   }
 
+  const t = await sequelize.transaction();
+
   try {
     const isUserExist = await User.findOne({
       where: { id },
+      transaction: t,
     });
 
     if (!isUserExist) {
@@ -102,7 +138,10 @@ exports.updateUser = async (req, res) => {
 
     await User.update(req.body, {
       where: { id },
+      transaction: t,
     });
+
+    await t.commit();
 
     res.send({
       status: "Success",
@@ -110,6 +149,7 @@ exports.updateUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    await t.rollback();
     res.status(500).send({
       status: "Failed",
       message: error.message,
@@ -120,9 +160,12 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   const { id } = req.params;
 
+  const t = await sequelize.transaction();
+
   try {
     const isUserExist = await User.findOne({
       where: { id },
+      transaction: t,
     });
 
     if (!isUserExist) {
@@ -134,7 +177,10 @@ exports.deleteUser = async (req, res) => {
 
     await User.destroy({
       where: { id },
+      transaction: t,
     });
+
+    await t.commit();
 
     res.send({
       status: "Success",
@@ -142,6 +188,7 @@ exports.deleteUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    await t.rollback();
     res.status(500).send({
       status: "Failed",
       message: error.message,
