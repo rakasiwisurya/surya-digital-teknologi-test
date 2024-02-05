@@ -32,7 +32,7 @@ module.exports = {
       message: {
         allowNull: false,
         type: Sequelize.TEXT,
-        defaultValue: "it’s your birthday",
+        defaultValue: "Hey, {first_name} {last_name} it’s your birthday",
       },
       status_message: {
         allowNull: false,

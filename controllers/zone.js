@@ -1,4 +1,3 @@
-const { default: axios } = require("axios");
 const moment = require("moment-timezone");
 
 exports.getZones = async (req, res) => {

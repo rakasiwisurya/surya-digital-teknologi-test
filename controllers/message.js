@@ -3,7 +3,12 @@ const moment = require("moment-timezone");
 const { User, sequelize } = require("../models");
 
 const sendEmailToApi = async (user, t) => {
-  const message = `Hey, ${user?.first_name} ${user?.last_name} ${user?.message}`;
+  const message = `${user?.message}`
+    .replace("{first_name}", user?.first_name)
+    .replace("{last_name}", user?.last_name)
+    .replace("{email}", user?.email)
+    .replace("{birth_date}", user?.birth_date)
+    .replace("{location}", user?.location);
 
   try {
     const response = await axios.post(
