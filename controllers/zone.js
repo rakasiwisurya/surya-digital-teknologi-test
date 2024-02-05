@@ -4,6 +4,7 @@ exports.getZones = async (req, res) => {
   try {
     res.send({
       status: "Success",
+      message: "Success get all zone",
       data: moment.tz.names(),
     });
   } catch (error) {
